@@ -1,0 +1,90 @@
+{
+    // 💡 Inputs are prompted on first server start, then stored securely by VS Code.
+    "inputs": [
+        {
+            "type": "promptString",
+            "id": "github-token",
+            "description": "GitHub Personal Access Token",
+            "password": true
+        },
+        {
+            "type": "promptString",
+            "id": "perplexity-key",
+            "description": "Perplexity API Key",
+            "password": true
+        },
+        {
+            "type": "promptString",
+            "id": "figma-token",
+            "description": "Figma Personal Access Token",
+            "password": true
+        },
+        {
+            "type": "promptString",
+            "id": "vercel-token",
+            "description": "Vercel API Token",
+            "password": true
+        }
+    ],
+    "servers": {
+        // https://github.com/github/github-mcp-server/
+        "Github": {
+            "url": "https://api.githubcopilot.com/mcp/",
+            "env": {
+                "GITHUB_TOKEN": "${input:github-token}"
+            }
+        },
+        // https://github.com/ppl-ai/modelcontextprotocol/
+        "Perplexity": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "-y",
+                "server-perplexity-ask"
+            ],
+            "env": {
+                "PERPLEXITY_API_KEY": "${input:perplexity-key}"
+            }
+        },
+        // Figma MCP Server for design workflows
+        "Figma": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "-y",
+                "@figma/mcp-server"
+            ],
+            "env": {
+                "FIGMA_ACCESS_TOKEN": "${input:figma-token}"
+            }
+        },
+        // File system access for mobile app development
+        "FileSystem": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-filesystem",
+                "/home/sunkimin/workspace/newsstand"
+            ]
+        },
+        // Web browsing for research and documentation
+        "Brave": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-brave-search"
+            ]
+        },
+        // Memory for context preservation across sessions
+        "Memory": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-memory"
+            ]
+        }
+    }
+}
