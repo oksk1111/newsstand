@@ -1,0 +1,23 @@
+{
+    "expo": {
+        "name": "Newsstand",
+        "slug": "newsstand",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "userInterfaceStyle": "automatic",
+        "platforms": [
+            "ios",
+            "android",
+            "web"
+        ],
+        "web": {
+            "bundler": "metro"
+        },
+        "plugins": [],
+        "extra": {
+            "eas": {
+                "projectId": "your-project-id"
+            }
+        }
+    }
+}

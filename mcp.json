@@ -68,6 +68,16 @@
                 "/home/sunkimin/workspace/newsstand"
             ]
         },
+        // Git repository access for version control
+        "Git": {
+            "type": "stdio",
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-git",
+                "/home/sunkimin/workspace/newsstand"
+            ]
+        },
         // Web browsing for research and documentation
         "Brave": {
             "type": "stdio",

@@ -17,38 +17,38 @@ initializeApp();
 
 // Create a client
 const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 2,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
+    defaultOptions: {
+        queries: {
+            retry: 2,
+            staleTime: 5 * 60 * 1000, // 5 minutes
+            cacheTime: 10 * 60 * 1000, // 10 minutes
+        },
     },
-  },
 });
 
 export default function App() {
-  return (
-    <GestureHandlerRootView style={styles.container}>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <PaperProvider>
-            <AuthProvider>
-              <NotificationProvider>
-                <NavigationContainer>
-                  <AppNavigator />
-                  <StatusBar style="auto" />
-                </NavigationContainer>
-              </NotificationProvider>
-            </AuthProvider>
-          </PaperProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </GestureHandlerRootView>
-  );
+    return (
+        <GestureHandlerRootView style={styles.container}>
+            <QueryClientProvider client={queryClient}>
+                <ThemeProvider>
+                    <PaperProvider>
+                        <AuthProvider>
+                            <NotificationProvider>
+                                <NavigationContainer>
+                                    <AppNavigator />
+                                    <StatusBar style="auto" />
+                                </NavigationContainer>
+                            </NotificationProvider>
+                        </AuthProvider>
+                    </PaperProvider>
+                </ThemeProvider>
+            </QueryClientProvider>
+        </GestureHandlerRootView>
+    );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+    container: {
+        flex: 1,
+    },
 });

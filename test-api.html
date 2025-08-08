@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newsstand API 테스트</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+        }
+
+        button {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0056CC;
+        }
+
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .success {
+            border-color: #28a745;
+            background-color: #d4edda;
+        }
+
+        .error {
+            border-color: #dc3545;
+            background-color: #f8d7da;
+        }
+
+        input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 5px;
+        }
+
+        .status {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🗞️ Newsstand API 테스트</h1>
+
+        <div class="section">
+            <h3>🏥 서버 상태 확인</h3>
+            <button onclick="checkHealth()">Health Check</button>
+            <div id="health-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="section">
+            <h3>📰 뉴스 API 테스트</h3>
+            <button onclick="getNews()">뉴스 가져오기</button>
+            <button onclick="getNews('technology')">기술 뉴스</button>
+            <button onclick="getNews('business')">비즈니스 뉴스</button>
+            <div id="news-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="section">
+            <h3>👤 사용자 인증 테스트</h3>
+            <div>
+                <input type="email" id="email" placeholder="이메일" value="test@example.com">
+                <input type="password" id="password" placeholder="비밀번호" value="testpass123">
+                <input type="text" id="name" placeholder="이름" value="Test User">
+            </div>
+            <button onclick="register()">회원가입</button>
+            <button onclick="login()">로그인</button>
+            <button onclick="createGuest()">게스트 세션</button>
+            <div id="auth-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="section">
+            <h3>🔐 인증된 API 테스트</h3>
+            <div class="status">Token: <span id="token-status">없음</span></div>
+            <button onclick="getPersonalizedNews()">개인화 뉴스</button>
+            <button onclick="getUserProfile()">프로필 조회</button>
+            <div id="protected-result" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        let authToken = localStorage.getItem('authToken');
+
+        // 토큰 상태 업데이트
+        function updateTokenStatus() {
+            document.getElementById('token-status').textContent = authToken ? '있음' : '없음';
+        }
+        updateTokenStatus();
+
+        // API 호출 헬퍼
+        async function apiCall(endpoint, options = {}) {
+            const url = `${API_BASE}${endpoint}`;
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers
+            };
+
+            if (authToken) {
+                headers.Authorization = `Bearer ${authToken}`;
+            }
+
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers
+                });
+
+                const data = await response.json();
+                return { success: response.ok, data, status: response.status };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        // 결과 표시 헬퍼
+        function showResult(elementId, result) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = `result ${result.success ? 'success' : 'error'}`;
+            element.textContent = JSON.stringify(result, null, 2);
+        }
+
+        // Health Check
+        async function checkHealth() {
+            const result = await fetch('http://localhost:3000/health')
+                .then(res => res.json())
+                .then(data => ({ success: true, data }))
+                .catch(error => ({ success: false, error: error.message }));
+
+            showResult('health-result', result);
+        }
+
+        // 뉴스 가져오기
+        async function getNews(category = 'all') {
+            const endpoint = category === 'all'
+                ? '/news'
+                : `/news?category=${category}&limit=5`;
+
+            const result = await apiCall(endpoint);
+            showResult('news-result', result);
+        }
+
+        // 회원가입
+        async function register() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const name = document.getElementById('name').value;
+
+            const result = await apiCall('/auth/register', {
+                method: 'POST',
+                body: JSON.stringify({ email, password, name })
+            });
+
+            if (result.success && result.data.data.token) {
+                authToken = result.data.data.token;
+                localStorage.setItem('authToken', authToken);
+                updateTokenStatus();
+            }
+
+            showResult('auth-result', result);
+        }
+
+        // 로그인
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const result = await apiCall('/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({ email, password })
+            });
+
+            if (result.success && result.data.data.token) {
+                authToken = result.data.data.token;
+                localStorage.setItem('authToken', authToken);
+                updateTokenStatus();
+            }
+
+            showResult('auth-result', result);
+        }
+
+        // 게스트 세션
+        async function createGuest() {
+            const result = await apiCall('/auth/guest', {
+                method: 'POST'
+            });
+
+            if (result.success && result.data.data.token) {
+                authToken = result.data.data.token;
+                localStorage.setItem('authToken', authToken);
+                updateTokenStatus();
+            }
+
+            showResult('auth-result', result);
+        }
+
+        // 개인화 뉴스
+        async function getPersonalizedNews() {
+            if (!authToken) {
+                showResult('protected-result', { success: false, error: '토큰이 필요합니다' });
+                return;
+            }
+
+            const result = await apiCall('/news/personalized');
+            showResult('protected-result', result);
+        }
+
+        // 사용자 프로필
+        async function getUserProfile() {
+            if (!authToken) {
+                showResult('protected-result', { success: false, error: '토큰이 필요합니다' });
+                return;
+            }
+
+            const result = await apiCall('/user/profile');
+            showResult('protected-result', result);
+        }
+
+        // 페이지 로드시 자동 테스트
+        window.onload = function () {
+            console.log('Newsstand API 테스트 페이지가 로드되었습니다.');
+            checkHealth();
+        };
+    </script>
+</body>
+
+</html>
